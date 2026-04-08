@@ -3,27 +3,23 @@ const path = require('path');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const app = express();
-const port = process.env.PORT || 10000;
-
 app.use(express.json());
-app.use(express.static(path.join(__dirname, './'))); // Serves your HTML/CSS/JS
+app.use(express.static(path.join(__dirname, './'))); 
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
-// Your AI Route
-app.post('/api/chat', async (req, res) => {
-    const { message, carbonMg, cpuState } = req.body;
-    try {
-        const model = genAI.getGenerativeModel({ 
-            model: "gemini-1.5-flash",
-            systemInstruction: "You are EcoTrack AI. Always reply in Hinglish."
-        });
-        const result = await model.generateContent(message);
-        res.json({ response: result.response.text() });
-    } catch (e) {
-        res.status(500).json({ response: "Error!" });
-    }
+// --- 1. CARBON AUDIT ROUTE (Put it here!) ---
+app.post('/api/audit', (req, res) => {
+    const { dataTransferred } = req.body;
+    const carbonMg = (dataTransferred * 0.0005).toFixed(2); 
+    res.json({ carbonMg: carbonMg });
 });
 
-app.listen(port,'0.0.0.0', () => console.log(`Server running on port ${port}`);
-           });
+// --- 2. AI CHAT ROUTE ---
+app.post('/api/chat', async (req, res) => {
+    // Your Gemini AI logic goes here
+});
+
+// --- 3. SERVER START (Keep this at the very bottom) ---
+const port = process.env.PORT || 10000;
+app.listen(port, '0.0.0.0', () => {
+    console.log(`Server running on port ${port}`);
+});

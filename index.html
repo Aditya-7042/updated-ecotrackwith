@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>EcoTrack 2026 | Carbon Auditor</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <div class="dashboard">
+        <header>
+            <h1>EcoTrack <span>v1.0</span></h1>
+            <div id="status-badge">System: Live</div>
+        </header>
+
+        <section class="stats-grid">
+            <div class="card">
+                <h3>Data Transferred</h3>
+                <p id="data-val">0.00 MB</p>
+            </div>
+            <div class="card">
+                <h3>CPU State</h3>
+                <p id="cpu-val">Checking...</p>
+            </div>
+            <div class="card accent">
+                <h3>Est. Carbon Impact</h3>
+                <p id="carbon-val">0.00 mg CO2</p>
+            </div>
+        </section>
+
+        <section class="chart-section">
+            <canvas id="carbonChart"></canvas>
+        </section>
+
+        <section class="ai-chat">
+            <h3>AI Assistant (Hinglish)</h3>
+            <div id="chat-messages"></div>
+            <div class="chat-input">
+                <input type="text" id="chat-input" placeholder="Ask about your footprint...">
+                <button id="send-btn">Send</button>
+            </div>
+        </section>
+    </div>
+    <script type="module" src="script.js"></script>
+</body>
+</html>

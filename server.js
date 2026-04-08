@@ -3,7 +3,7 @@ const path = require('path');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 10000;
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, './'))); // Serves your HTML/CSS/JS
@@ -25,4 +25,5 @@ app.post('/api/chat', async (req, res) => {
     }
 });
 
-app.listen(port, () => console.log(`Server running on port ${port}`));
+app.listen(port,'0.0.0.0', () => console.log(`Server running on port ${port}`);
+           });

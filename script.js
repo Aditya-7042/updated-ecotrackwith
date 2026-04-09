@@ -75,6 +75,8 @@ sendBtn.addEventListener('click', () => {
 });
 
 // --- Data Tracking & Firebase Sync ---
+// --- EcoTrack Chart & Audit Update ---
+
 async function updateAudit(bytes) {
     try {
         const res = await fetch('/api/audit', {
@@ -83,43 +85,38 @@ async function updateAudit(bytes) {
             body: JSON.stringify({ bytes })
         });
 
-        // Check if the response is actually okay (200-299)
-        if (!res.ok) throw new Error(`Server error: ${res.status}`);
+        // 1. Always check if the response was successful
+        if (!res.ok) throw new Error("Server response was not ok");
 
         const data = await res.json();
 
-        // Update UI for Data Usage
+        // 2. Fix the .toFixed crash: ensure carbonMg is a number or default to 0
+        const carbonValue = (data && typeof data.carbonMg === 'number') ? data.carbonMg : 0;
+        
+        // Update UI Cards
         document.getElementById('data-val').innerText = (bytes / (1024 * 1024)).toFixed(2) + " MB";
-
-        // FIX: Ensure data.carbonMg is a number before calling .toFixed()
-        // We use || 0 as a fallback if the backend sends null or undefined
-        const carbonValue = typeof data.carbonMg === 'number' ? data.carbonMg : 0;
         document.getElementById('carbon-val').innerText = carbonValue.toFixed(2) + " mg CO2";
 
-        // Chart Update
-        timestamps.push(new Date().toLocaleTimeString());
+        // 3. Chart Logic: Push new data to the arrays
+        const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        
+        timestamps.push(now);
         carbonData.push(carbonValue);
 
+        // Keep only the last 15 points to keep the chart clean
         if (timestamps.length > 15) {
             timestamps.shift();
             carbonData.shift();
         }
-        carbonChart.update();
 
-        // Firebase Sync
-        // Only sync if you have a valid sessionId and db reference
-        if (typeof sessionId !== 'undefined') {
-            set(ref(db, 'live_audit/' + sessionId), {
-                bytes: bytes,
-                carbonMg: carbonValue,
-                timestamp: Date.now()
-            });
-        }
+        // 4. Update the visual Chart.js instance
+        // 'none' prevents the bars/lines from jumping around during frequent updates
+        carbonChart.update('none');
 
     } catch (error) {
-        console.error("Audit Update Failed:", error);
-        // Optional: Update the UI to show the AI is having trouble
-        document.getElementById('carbon-val').innerText = "Error";
+        console.error("Dashboard update error:", error);
+        // Default values to keep the UI from looking broken
+        document.getElementById('carbon-val').innerText = "0.00 mg CO2";
     }
 }
 

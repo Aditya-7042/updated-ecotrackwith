@@ -40,7 +40,7 @@ const chatMessages = document.getElementById('chat-messages');
 const chatInput = document.getElementById('chat-input');
 const sendBtn = document.getElementById('send-btn');
 
-function addMessage(text, isUser = false) {
+function addMessage(text, isUser = true) {
     const msg = document.createElement('div');
     msg.className = isUser ? 'user-message' : 'ai-message';
     msg.textContent = text;

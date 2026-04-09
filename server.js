@@ -18,7 +18,7 @@ app.post('/api/audit', (req, res) => {
 app.post('/api/chat', async (req, res) => {
     const { message } = req.body;
     try {
-        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+        const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
         const model = genAI.getGenerativeModel({ 
             model: "gemini-1.5-flash",
             systemInstruction: "You are EcoTrack AI. Always reply in Hinglish."

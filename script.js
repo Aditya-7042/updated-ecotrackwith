@@ -76,28 +76,51 @@ sendBtn.addEventListener('click', () => {
 
 // --- Data Tracking & Firebase Sync ---
 async function updateAudit(bytes) {
-    const res = await fetch('/api/audit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bytes })
-    });
-    const data = await res.json();
-    
-    document.getElementById('data-val').innerText = (bytes / (1024*1024)).toFixed(2) + " MB";
-    document.getElementById('carbon-val').innerText = data.carbonMg.toFixed(2) + " mg CO2";
+    try {
+        const res = await fetch('/api/audit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ bytes })
+        });
 
-    // Chart Update
-    timestamps.push(new Date().toLocaleTimeString());
-    carbonData.push(data.carbonMg);
-    if(timestamps.length > 15) { timestamps.shift(); carbonData.shift(); }
-    carbonChart.update();
+        // Check if the response is actually okay (200-299)
+        if (!res.ok) throw new Error(`Server error: ${res.status}`);
 
-    // Firebase Sync
-    set(ref(db, 'live_audit/' + sessionId), { 
-        carbon_mg: data.carbonMg, 
-        mb_transferred: (bytes / (1024*1024)).toFixed(2),
-        timestamp: Date.now() 
-    });
+        const data = await res.json();
+
+        // Update UI for Data Usage
+        document.getElementById('data-val').innerText = (bytes / (1024 * 1024)).toFixed(2) + " MB";
+
+        // FIX: Ensure data.carbonMg is a number before calling .toFixed()
+        // We use || 0 as a fallback if the backend sends null or undefined
+        const carbonValue = typeof data.carbonMg === 'number' ? data.carbonMg : 0;
+        document.getElementById('carbon-val').innerText = carbonValue.toFixed(2) + " mg CO2";
+
+        // Chart Update
+        timestamps.push(new Date().toLocaleTimeString());
+        carbonData.push(carbonValue);
+
+        if (timestamps.length > 15) {
+            timestamps.shift();
+            carbonData.shift();
+        }
+        carbonChart.update();
+
+        // Firebase Sync
+        // Only sync if you have a valid sessionId and db reference
+        if (typeof sessionId !== 'undefined') {
+            set(ref(db, 'live_audit/' + sessionId), {
+                bytes: bytes,
+                carbonMg: carbonValue,
+                timestamp: Date.now()
+            });
+        }
+
+    } catch (error) {
+        console.error("Audit Update Failed:", error);
+        // Optional: Update the UI to show the AI is having trouble
+        document.getElementById('carbon-val').innerText = "Error";
+    }
 }
 
 // --- Live Observers ---
